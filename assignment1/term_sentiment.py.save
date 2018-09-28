@@ -4,8 +4,7 @@ def dict_sent(file):
     scores = dict()
     with open(file, "r") as fp:
         for line in fp.readlines():
-            term, score = line.split("\t")
-            scores[term] = int(score)
+            term, score = line.split("\scores[term] = int(score)
     return scores
 
 def compute_new_term(file, scores):
@@ -35,7 +34,7 @@ def compute_new_term(file, scores):
 
 def print_new_term(dic):
     for k, v in dic.items():
-        print k, v
+        print k,v
 
 def main():
     scores = dict_sent(sys.argv[1])
