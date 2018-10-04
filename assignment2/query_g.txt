@@ -1,0 +1,13 @@
+SELECT value
+FROM (
+	SELECT row_num, col_num, sum(prod) as value
+	FROM (
+		SELECT A.row_num as row_num, B.col_num as col_num, A.value*B.value as prod
+		FROM A
+		INNER JOIN B
+		ON A.col_num = B.row_num
+	) P
+	GROUP BY row_num, col_num
+	/*ORDER BY row_num, col_num*/
+) M
+WHERE row_num = 2 AND col_num = 3

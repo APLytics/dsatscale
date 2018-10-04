@@ -1,0 +1,16 @@
+SELECT count(*)
+
+FROM
+
+(SELECT docid, term
+FROM Frequency
+WHERE term = 'transactions'
+) x
+
+INNER JOIN
+(SELECT docid, term
+FROM Frequency
+WHERE term = 'world'
+) y
+
+ON x.docid = y.docid
