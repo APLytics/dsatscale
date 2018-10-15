@@ -2,31 +2,17 @@ SELECT value
 FROM (
 	SELECT d1, d2, sum(prod) as value
 	FROM (
-		SELECT D1.docid as d1, D2.docid as d2, D1.tfidf*D2.tfidf as prod
+		SELECT D1.docid as d1, D2.docid as d2, D1.tf*D2.tf as prod
 		FROM (
 			/* TF IDF */
-			SELECT x.docid, x.term, x.count / y.idf as tfidf
+			SELECT x.docid, x.term, x.count as tf
 			FROM Frequency as x
-			INNER JOIN (
-				/*  IDF */
-				SELECT docid, CAST(sum(count) AS float) as idf
-				FROM Frequency
-				GROUP BY docid
-			) AS y
-			ON x.docid = y.docid
 		) D1
 		
 		INNER JOIN(
 			/* TF IDF */
-			SELECT x.docid, x.term, x.count / y.idf as tfidf
+			SELECT x.docid, x.term, x.count as tf
 			FROM Frequency as x
-			INNER JOIN (
-				/* IDF */
-				SELECT docid, CAST(sum(count) AS float) as idf
-				FROM Frequency
-				GROUP BY docid
-			) AS y
-			ON x.docid = y.docid
 		) D2
 		
 		ON D1.term = D2.term

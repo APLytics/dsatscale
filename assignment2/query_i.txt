@@ -1,0 +1,40 @@
+/* ADD THE QUERY TO THE DB */
+/*
+CREATE VIEW Similarity AS
+
+SELECT * FROM Frequency
+UNION
+SELECT 'q' as docid, 'washington' as term, 1 as count 
+UNION
+SELECT 'q' as docid, 'taxes' as term, 1 as count
+UNION 
+SELECT 'q' as docid, 'treasury' as term, 1 as count
+*/
+
+
+/* SIMILARITY */
+SELECT value
+FROM (
+	SELECT d1, d2, sum(prod) as value
+	FROM (
+		SELECT D1.docid as d1, D2.docid as d2, D1.tf*D2.tf as prod
+		FROM (
+			/* TF */
+			SELECT x.docid, x.term, x.count as tf
+			FROM Similarity as x
+		) D1
+		
+		INNER JOIN(
+			/* TF */
+			SELECT x.docid, x.term, x.count as tf
+			FROM Similarity as x
+		) D2
+		
+		ON D1.term = D2.term
+	) P
+	
+GROUP BY d1, d2
+) S
+WHERE d1 = 'q'
+ORDER BY value DESC
+LIMIT 1
