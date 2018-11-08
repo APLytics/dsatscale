@@ -1,0 +1,126 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+Analyzing data for Coursera Data Science at Scale course.
+```{r}
+rm(list=ls())
+set.seed(123)
+require('caret')
+require('ggplot2')
+require('rpart')
+require('randomForest')
+require('e1071')
+```
+
+Load the data:
+```{r}
+data <- read.csv(file = './seaflow_21min.csv')
+```
+Q1 : How many particles labeled "synecho are in the file provided"?
+```{r}
+length(data[data$pop == 'synecho', 'pop' ])
+```
+Q2: What is the 3rd Auantile of the field fsc_small?
+```{r}
+summary(data$fsc_small)[5]
+```
+
+Divide the data in train and test sets:
+```{r}
+ix_train <- unlist(createDataPartition(data$pop, p = .5))
+```
+Q3: What is the mean of the variable "time" for your training set?
+
+```{r}
+mean(data[ix_train, "time"])
+```
+
+Q4: Plot the data and answer the question.
+```{r}
+ggplot(data, aes(chl_small, pe, color = pop)) + 
+         geom_point(alpha =.2) +
+         theme_minimal()
+```
+
+Train a decision tree
+```{r}
+fol <- formula(pop ~ fsc_small + fsc_perp + fsc_big + pe + chl_big + chl_small)
+modelDT <- rpart(fol, method = 'class', data=data[ix_train,])
+```
+Q5, Q6, Q7: inspet the tree
+```{r}
+print(modelDT)
+```
+Q8: Evaluate the decision tree model on test data
+```{r}
+y_predDT <- predict(modelDT, data[-ix_train, ], type = 'class')
+mean(y_predDT == data[-ix_train, 'pop'])
+```
+
+Tain a random forest
+Q9: Evaluate the random forest model on test data
+
+```{r}
+modelRF <- randomForest(fol, method = 'class', data=data[ix_train,])
+y_predRF <- predict(modelRF, data[-ix_train, ], type = 'class')
+mean(y_predRF == data[-ix_train, 'pop'])
+```
+Q10: Evaluate the importance of the features
+```{r}
+importance(modelRF)
+```
+
+Train an SVM
+Q11: Evaluate the SVM model on test data
+
+```{r}
+modelSVM <- svm(fol, method = 'class', data=data[ix_train,])
+y_predSVM <- predict(modelSVM, data[-ix_train, ], type = 'class')
+accSVM1 =  mean(y_predSVM == data[-ix_train, 'pop'])
+```
+
+Q12: Create a confusion matrix. What appears to be the most common error the models make?
+
+
+```{r}
+print('Decision Tree')
+table(pred = y_predDT, true = data[-ix_train, "pop"])
+print('Random Forest')
+table(pred = y_predRF, true = data[-ix_train, "pop"])
+print('SVM')
+table(pred = y_predSVM, true = data[-ix_train, "pop"])
+
+```
+Q13: one variable is not continuous
+```{r}
+#hist(data$fsc_small)
+#hist(data$fsc_perp)
+hist(data$fsc_big)
+#hist(data$pe)
+#hist(data$chl_small)
+#hist(data$chl_big)
+```
+
+Calibration error
+```{r}
+ggplot(data, aes(time, chl_big, color = pop)) + 
+         geom_point(alpha =.2) +
+         theme_minimal()
+```
+
+Retrain SVM model using new data
+```{r}
+data_filt <- data[data$file_id != 208, ]
+ix_train2 <- unlist(createDataPartition(data_filt$pop, p = .5))
+
+modelSVM2 <- svm(fol, method = 'class', data=data_filt[ix_train2,])
+y_predSVM2 <- predict(modelSVM2, data_filt[-ix_train2, ], type = 'class')
+accSVM2 = mean(y_predSVM2 == data_filt[-ix_train2, 'pop'])
+
+```
+
+```{r}
+accSVM2 - accSVM1
+```
+
